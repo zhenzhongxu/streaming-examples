@@ -1,0 +1,60 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+
+
+configurations {
+    provided
+    compile.extendsFrom provided
+}
+
+//configurations.all {
+//    resolutionStrategy {
+//        force 'com.google.inject:guice:4.0'
+//    }
+//}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+sourceSets {
+    main {
+        compileClasspath += configurations.provided
+    }
+}
+
+idea {
+    module {
+        scopes.PROVIDED.plus += [configurations.provided]
+    }
+}
+
+
+jar {
+    dependsOn configurations.runtime
+    zip64 true
+    from {
+        (configurations.runtime - configurations.provided).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+    exclude 'META-INF/*.RSA', 'META-INF/*.SF', 'META-INF/*.DSA'
+}
+
+test {
+    useTestNG()
+}
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+    compile(group: 'org.apache.flink', name: 'flink-connector-twitter_2.11', version: "$FLINK_FULL_VERSION")
+    compile(group: 'org.apache.flink', name: 'flink-runtime_2.11', version: "$FLINK_FULL_VERSION")
+    compile(group: 'org.scala-lang', name: 'scala-library', version: "$SCALA_FULL_VERSION")
+
+    compile(group: 'log4j', name: 'apache-log4j-extras', version: '1.2.17')
+
+
+    testCompile(group: 'org.testng', name: 'testng', version: '6.10')
+    testCompile(group: 'org.mockito', name: 'mockito-all', version: '1.10.+')
+    testCompile(group: 'org.assertj', name: 'assertj-core', version: '3.6.1')
+}
